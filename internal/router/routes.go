@@ -9,5 +9,6 @@ import (
 func addRoutes(
 	mux *http.ServeMux,
 ) {
-	mux.Handle("/", http.HandlerFunc(handler.MainHandler))
+	mux.HandleFunc("/", handler.MainHandler)
+	mux.HandleFunc("/{checksum}", handler.ReturnUrlHandler)
 }

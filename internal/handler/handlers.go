@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"io"
 	"net/http"
 
@@ -33,4 +34,26 @@ func MainHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(result))
+}
+
+func ReturnUrlHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet || r.Header.Get("Content-Type") != "text/plain" {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	checksum := r.PathValue("checksum")
+
+	url, err := shortener.GetUrl(checksum)
+	if err != nil {
+		if errors.Is(err, shortener.ErrNoResultFound) {
+			http.Error(w, "unregistered url", http.StatusBadRequest)
+			return
+		}
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusTemporaryRedirect)
+	w.Write([]byte("Location: " + url))
 }
