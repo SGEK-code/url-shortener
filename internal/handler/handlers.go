@@ -54,6 +54,6 @@ func ReturnUrlHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Location", url)
 	w.WriteHeader(http.StatusTemporaryRedirect)
-	w.Write([]byte("Location: " + url))
 }
