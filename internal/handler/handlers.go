@@ -37,7 +37,7 @@ func MainHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ReturnUrlHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet || r.Header.Get("Content-Type") != "text/plain" {
+	if r.Method != http.MethodGet {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
