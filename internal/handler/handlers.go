@@ -8,7 +8,15 @@ import (
 	"github.com/SGEK-code/url-shortener.git/internal/service/shortener"
 )
 
-func MainHandler(w http.ResponseWriter, r *http.Request) {
+type ShortenerHandler struct {
+	srs *shortener.ResourceService
+}
+
+func NewShortenerHandler(srs *shortener.ResourceService) *ShortenerHandler {
+	return &ShortenerHandler{srs: srs}
+}
+
+func (h *ShortenerHandler) Main(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusBadRequest)
 		return
@@ -24,7 +32,7 @@ func MainHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortened, err := shortener.ShortenURL(string(body))
+	shortened, err := h.srs.ShortenURL(string(body))
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -36,7 +44,7 @@ func MainHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(result))
 }
 
-func ReturnUrlHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ShortenerHandler) ReturnUrl(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
@@ -44,7 +52,7 @@ func ReturnUrlHandler(w http.ResponseWriter, r *http.Request) {
 
 	checksum := r.PathValue("checksum")
 
-	url, err := shortener.GetUrl(checksum)
+	url, err := h.srs.GetUrl(checksum)
 	if err != nil {
 		if errors.Is(err, shortener.ErrNoResultFound) {
 			http.Error(w, "unregistered url", http.StatusBadRequest)

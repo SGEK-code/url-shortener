@@ -4,26 +4,44 @@ import (
 	"errors"
 	"fmt"
 	"hash/crc32"
+
+	"github.com/SGEK-code/url-shortener.git/internal/model"
 )
 
-var urlToHash = make(map[string]string)
-var HashToUrl = make(map[string]string)
 var ErrNoResultFound = errors.New("no results found")
 
-func ShortenURL(url string) (string, error) {
+type ResourceRep interface {
+	Create(resource *model.Resource) error
+	GetByUrl(url string) (*model.Resource, error)
+	GetByHash(hash string) (*model.Resource, error)
+}
+
+type ResourceService struct {
+	repo ResourceRep
+}
+
+func NewResourceService(repo ResourceRep) *ResourceService {
+	return &ResourceService{
+		repo: repo,
+	}
+}
+
+func (s *ResourceService) ShortenURL(url string) (string, error) {
 	checksumInt := crc32.ChecksumIEEE([]byte(url))
 	checksum := fmt.Sprintf("%08X", checksumInt)
-	urlToHash[url] = checksum
-	HashToUrl[checksum] = url
+	resource := &model.Resource{Url: url, Hash: checksum}
+	if err := s.repo.Create(resource); err != nil {
+		return "", err
+	}
 
 	return checksum, nil
 }
 
-func GetUrl(checksum string) (string, error) {
-	if val, ok := HashToUrl[checksum]; !ok {
+func (s *ResourceService) GetUrl(hash string) (string, error) {
+	resource, err := s.repo.GetByHash(hash)
+	if err != nil {
 		return "", ErrNoResultFound
-	} else {
-		return val, nil
 	}
 
+	return resource.Url, nil
 }
