@@ -72,3 +72,58 @@ func TestMainFormat(t *testing.T) {
 		})
 	}
 }
+
+func TestReturnUrlFormat(t *testing.T) {
+	repo := inmemory.NewInMemoryResourceRepo()
+	shortener := shortener.NewResourceService(repo)
+	handler := NewShortenerHandler(shortener)
+
+	meowUrl := "http://meow.ru"
+	posTestEx, err := shortener.ShortenURL(meowUrl)
+	require.NoError(t, err)
+	value, err := shortener.GetUrl(posTestEx)
+	require.NoError(t, err)
+	require.Equal(t, meowUrl, value)
+
+	tests := []struct {
+		method           string
+		targetAddr       string
+		code             int
+		expectedLocation string
+	}{
+		{
+			method:           http.MethodPost,
+			targetAddr:       "/" + posTestEx,
+			code:             http.StatusBadRequest,
+			expectedLocation: "",
+		},
+		{
+			method:           http.MethodGet,
+			targetAddr:       "/badCheck",
+			code:             http.StatusBadRequest,
+			expectedLocation: "",
+		},
+		{
+			method:           http.MethodGet,
+			targetAddr:       "/" + posTestEx,
+			code:             http.StatusTemporaryRedirect,
+			expectedLocation: meowUrl,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.method, func(t *testing.T) {
+			recorder := httptest.NewRecorder()
+			req := httptest.NewRequest(test.method, test.targetAddr, nil)
+
+			handler.ReturnUrl(recorder, req)
+
+			response := recorder.Result()
+			err = response.Body.Close()
+			require.NoError(t, err)
+
+			assert.Equal(t, test.code, response.StatusCode)
+			assert.Equal(t, test.expectedLocation, response.Header.Get("Location"))
+		})
+	}
+}

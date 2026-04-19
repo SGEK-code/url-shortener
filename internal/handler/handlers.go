@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/SGEK-code/url-shortener.git/internal/service/shortener"
 )
@@ -50,7 +51,8 @@ func (h *ShortenerHandler) ReturnUrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	checksum := r.PathValue("checksum")
+	checksum := strings.TrimPrefix(r.URL.Path, "/")
+	checksum = strings.TrimSpace(checksum)
 
 	url, err := h.srs.GetUrl(checksum)
 	if err != nil {
