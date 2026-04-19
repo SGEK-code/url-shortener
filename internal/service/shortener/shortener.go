@@ -27,13 +27,21 @@ func NewResourceService(repo ResourceRep) *ResourceService {
 }
 
 func (s *ResourceService) ShortenURL(url string) (string, error) {
-	checksumInt := crc32.ChecksumIEEE([]byte(url))
-	checksum := fmt.Sprintf("%08X", checksumInt)
+	checksum, err := ShortenURLNoSave(url)
+	if err != nil {
+		return "", err
+	}
 	resource := &model.Resource{Url: url, Hash: checksum}
 	if err := s.repo.Create(resource); err != nil {
 		return "", err
 	}
 
+	return checksum, nil
+}
+
+func ShortenURLNoSave(url string) (string, error) {
+	checksumInt := crc32.ChecksumIEEE([]byte(url))
+	checksum := fmt.Sprintf("%08X", checksumInt)
 	return checksum, nil
 }
 
