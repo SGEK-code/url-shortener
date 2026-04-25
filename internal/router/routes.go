@@ -1,15 +1,18 @@
 package router
 
 import (
-	"net/http"
-
 	"github.com/SGEK-code/url-shortener.git/internal/handler"
+	"github.com/go-chi/chi/v5"
 )
 
 func addRoutes(
-	mux *http.ServeMux,
+	mux *chi.Mux,
 	shortenerHandler *handler.ShortenerHandler,
 ) {
-	mux.HandleFunc("/", shortenerHandler.Main)
-	mux.HandleFunc("/{checksum}", shortenerHandler.ReturnUrl)
+	mux.Route("/", func(r chi.Router) {
+		r.Post("/", shortenerHandler.Main)
+		r.Route("/{checksum}", func(r chi.Router) {
+			r.Get("/", shortenerHandler.ReturnUrl)
+		})
+	})
 }
