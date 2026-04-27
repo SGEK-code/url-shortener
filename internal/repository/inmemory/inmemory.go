@@ -1,11 +1,13 @@
 package inmemory
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/SGEK-code/url-shortener.git/internal/model"
 	"github.com/SGEK-code/url-shortener.git/internal/service/shortener"
 )
+
+var ErrNoResultFound = errors.New("no results found")
 
 type InMemoryResourceRepo struct {
 	urlToHash map[string]string
@@ -30,7 +32,7 @@ func (r *InMemoryResourceRepo) Create(resource *model.Resource) error {
 func (r *InMemoryResourceRepo) GetByUrl(url string) (*model.Resource, error) {
 	hash, ok := r.urlToHash[url]
 	if !ok {
-		return nil, fmt.Errorf("hash for url '%s' not found", url)
+		return nil, ErrNoResultFound
 	}
 	return &model.Resource{Url: url, Hash: hash}, nil
 }
@@ -38,7 +40,7 @@ func (r *InMemoryResourceRepo) GetByUrl(url string) (*model.Resource, error) {
 func (r *InMemoryResourceRepo) GetByHash(hash string) (*model.Resource, error) {
 	url, ok := r.hashToUrl[hash]
 	if !ok {
-		return nil, fmt.Errorf("url for hash '%s' not found", hash)
+		return nil, ErrNoResultFound
 	}
 	return &model.Resource{Url: url, Hash: hash}, nil
 }
