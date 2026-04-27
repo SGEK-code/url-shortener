@@ -6,6 +6,7 @@ import (
 	"hash/crc32"
 
 	"github.com/SGEK-code/url-shortener.git/internal/model"
+	"github.com/SGEK-code/url-shortener.git/internal/repository/inmemory"
 )
 
 var ErrNoResultFound = errors.New("no results found")
@@ -15,6 +16,8 @@ type ResourceRep interface {
 	GetByUrl(url string) (*model.Resource, error)
 	GetByHash(hash string) (*model.Resource, error)
 }
+
+var _ ResourceRep = (*inmemory.InMemoryResourceRepo)(nil)
 
 type ResourceService struct {
 	repo ResourceRep

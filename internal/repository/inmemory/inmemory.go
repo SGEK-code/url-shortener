@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/SGEK-code/url-shortener.git/internal/model"
-	"github.com/SGEK-code/url-shortener.git/internal/service/shortener"
 )
 
 var ErrNoResultFound = errors.New("no results found")
@@ -20,8 +19,6 @@ func NewInMemoryResourceRepo() *InMemoryResourceRepo {
 		hashToUrl: make(map[string]string),
 	}
 }
-
-var _ shortener.ResourceRep = (*InMemoryResourceRepo)(nil)
 
 func (r *InMemoryResourceRepo) Create(resource *model.Resource) error {
 	r.urlToHash[resource.Url] = resource.Hash
