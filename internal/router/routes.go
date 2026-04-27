@@ -10,9 +10,9 @@ func addRoutes(
 	shortenerHandler *handler.ShortenerHandler,
 ) {
 	mux.Route("/", func(r chi.Router) {
-		r.Post("/", shortenerHandler.Main)
+		r.HandleFunc("/", shortenerHandler.Main)
 		r.Route("/{checksum}", func(r chi.Router) {
-			r.Get("/", shortenerHandler.ReturnUrl)
+			r.HandleFunc("/", shortenerHandler.ReturnUrl)
 		})
 	})
 }
