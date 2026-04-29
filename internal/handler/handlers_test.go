@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/SGEK-code/url-shortener.git/internal/config"
 	"github.com/SGEK-code/url-shortener.git/internal/repository/inmemory"
 	"github.com/SGEK-code/url-shortener.git/internal/service/shortener"
 	"github.com/stretchr/testify/assert"
@@ -17,6 +18,8 @@ func TestMainFormat(t *testing.T) {
 	meowUrl := "http://meow.ru"
 	posTestEx, err := shortener.ShortenURLNoSave(meowUrl)
 	require.NoError(t, err)
+
+	cfg := &config.Config{ListenAddr: "notUsed", BaseURL: "http://testBaseUrl.ru"}
 
 	tests := []struct {
 		method              string
@@ -44,13 +47,13 @@ func TestMainFormat(t *testing.T) {
 			contentTypeSent:     "text/plain",
 			contentTypeExpected: "text/plain",
 			code:                http.StatusCreated,
-			body:                "http://example.com/" + posTestEx,
+			body:                cfg.BaseURL + "/" + posTestEx,
 		},
 	}
 
 	repo := inmemory.NewInMemoryResourceRepo()
 	shortener := shortener.NewResourceService(repo)
-	handler := NewShortenerHandler(shortener)
+	handler := NewShortenerHandler(shortener, cfg)
 
 	for _, test := range tests {
 		t.Run(test.method, func(t *testing.T) {
@@ -76,7 +79,8 @@ func TestMainFormat(t *testing.T) {
 func TestReturnUrlFormat(t *testing.T) {
 	repo := inmemory.NewInMemoryResourceRepo()
 	shortener := shortener.NewResourceService(repo)
-	handler := NewShortenerHandler(shortener)
+	cfg := &config.Config{ListenAddr: "notUsed", BaseURL: "notUsed"}
+	handler := NewShortenerHandler(shortener, cfg)
 
 	meowUrl := "http://meow.ru"
 	posTestEx, err := shortener.ShortenURL(meowUrl)

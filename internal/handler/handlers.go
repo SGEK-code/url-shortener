@@ -6,15 +6,17 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/SGEK-code/url-shortener.git/internal/config"
 	"github.com/SGEK-code/url-shortener.git/internal/service/shortener"
 )
 
 type ShortenerHandler struct {
-	srs *shortener.ResourceService
+	baseURL string
+	srs     *shortener.ResourceService
 }
 
-func NewShortenerHandler(srs *shortener.ResourceService) *ShortenerHandler {
-	return &ShortenerHandler{srs: srs}
+func NewShortenerHandler(srs *shortener.ResourceService, cfg *config.Config) *ShortenerHandler {
+	return &ShortenerHandler{srs: srs, baseURL: cfg.BaseURL}
 }
 
 func (h *ShortenerHandler) Main(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +41,7 @@ func (h *ShortenerHandler) Main(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := "http://" + r.Host + "/" + shortened
+	result := h.baseURL + "/" + shortened
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(result))
