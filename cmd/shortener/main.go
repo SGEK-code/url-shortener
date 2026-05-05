@@ -23,7 +23,7 @@ func run(cfg *config.Config) error {
 		Handler: router.SetupRouter(repo, cfg),
 	}
 
-	log.Printf("Server starting on %s", srv.Addr)
+	log.Printf("Server starting on %s, base URL is %s", srv.Addr, cfg.BaseURL)
 	err = srv.ListenAndServe()
 
 	return err
