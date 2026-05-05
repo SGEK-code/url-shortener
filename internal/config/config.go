@@ -9,6 +9,7 @@ import (
 type Config struct {
 	ListenAddr string `env:"SERVER_ADDRESS"` // флаг -a
 	BaseURL    string `env:"BASE_URL"`       // флаг -b
+	LogLevel   string `env:"LOG_LEVEL"`      // флаг -l
 }
 
 func ParseConfig() *Config {
@@ -24,6 +25,10 @@ func ParseConfig() *Config {
 	if cfg.BaseURL == "" {
 		flag.StringVar(&cfg.BaseURL, "b", "http://localhost:8080",
 			"Base URL for shortened links (e.g. http://localhost:8000)")
+	}
+	if cfg.LogLevel == "" {
+		flag.StringVar(&cfg.LogLevel, "l", "info",
+			"Logging level (e.g. debug, info...)")
 	}
 
 	flag.Parse()
