@@ -5,11 +5,17 @@ import (
 	"net/http"
 
 	"github.com/SGEK-code/url-shortener.git/internal/config"
+	"github.com/SGEK-code/url-shortener.git/internal/logger"
 	"github.com/SGEK-code/url-shortener.git/internal/repository/inmemory"
 	"github.com/SGEK-code/url-shortener.git/internal/router"
 )
 
 func run(cfg *config.Config) error {
+	err := logger.Initialize(cfg.LogLevel)
+	if err != nil {
+		return err
+	}
+
 	repo := inmemory.NewInMemoryResourceRepo()
 
 	srv := &http.Server{
@@ -17,8 +23,8 @@ func run(cfg *config.Config) error {
 		Handler: router.SetupRouter(repo, cfg),
 	}
 
-	log.Printf("Server starting on %s", srv.Addr)
-	err := srv.ListenAndServe()
+	log.Printf("Server starting on %s, base URL is %s", srv.Addr, cfg.BaseURL)
+	err = srv.ListenAndServe()
 
 	return err
 }
